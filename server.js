@@ -135,7 +135,7 @@ app.get('/', (req, res) => {
 app.get('/bayar', async (req, res) => {
     let parameter = {
         "transaction_details": { "order_id": "LQ-" + Date.now(), "gross_amount": 10000 },
-        "callbacks": { "finish": "http://localhost:3000/mulai-kuis" }
+        "callbacks": { "finish": "https://myleadquiz-production.up.railway.app/mulai-kuis" }
     };
     try {
         const transaction = await snap.createTransaction(parameter);
