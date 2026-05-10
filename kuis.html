@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>LeadQuiz Challenge</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@400&display=swap" rel="stylesheet">
+    <style>
+        body { margin: 0; background: url('/background.jpg') no-repeat center center fixed; background-size: cover; font-family: 'Roboto', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: white; }
+        #container { background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(15px); width: 90%; max-width: 450px; padding: 40px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5); text-align: center; }
+        h2 { font-family: 'Orbitron'; color: #00d4ff; text-transform: uppercase; }
+        .input-group { text-align: left; margin-bottom: 15px; }
+        label { display: block; font-size: 12px; color: #00d4ff; margin-bottom: 5px; font-weight: bold; }
+        .input-box { width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; color: white; box-sizing: border-box; outline: none; }
+        .input-box:focus { border-color: #00d4ff; }
+        .btn-mulai { width: 100%; padding: 15px; background: linear-gradient(45deg, #00d4ff, #0055ff); color: white; border: none; border-radius: 10px; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-mulai:hover { filter: brightness(1.2); transform: translateY(-2px); }
+        .opt { display: block; width: 100%; padding: 12px; margin: 10px 0; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 8px; cursor: pointer; text-align: left; }
+        .opt:hover { background: rgba(0, 212, 255, 0.2); border-color: #00d4ff; }
+        #timer-bar { height: 5px; background: #00d4ff; width: 100%; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 0 10px #00d4ff; }
+    </style>
+</head>
+<body>
+
+<div id="container">
+    <div id="form-area">
+        <h2>Data Peserta</h2>
+        <p style="font-size: 12px; color: #aaa;">Lengkapi data untuk pengiriman hadiah</p>
+        <div class="input-group"><label>Nama Lengkap</label><input type="text" id="nama" class="input-box" placeholder="Sesuai KTP"></div>
+        <div class="input-group"><label>WhatsApp</label><input type="number" id="telp" class="input-box" placeholder="0812..."></div>
+        <div class="input-group"><label>Alamat</label><textarea id="alamat" class="input-box" style="height:60px" placeholder="Alamat pengiriman..."></textarea></div>
+        <button onclick="start()" class="btn-mulai">MULAI KUIS</button>
+    </div>
+
+    <div id="quiz-area" style="display:none;">
+        <div id="timer-bar"></div>
+        <div id="q-count" style="font-size:12px; color:#00d4ff; margin-bottom:10px;">Soal 1/5</div>
+        <h3 id="question" style="margin-bottom:20px;"></h3>
+        <div id="options"></div>
+    </div>
+</div>
+
+<script>
+    const bankSoal = [
+       // 1-10: Sains & Antariksa
+        { q: "Siapa ilmuwan yang mengusulkan teori Relativitas Umum?", a: ["Isaac Newton", "Albert Einstein", "Nikola Tesla", "Stephen Hawking"], correct: 1 },
+        { q: "Apa partikel subatomik yang tidak memiliki muatan listrik?", a: ["Proton", "Elektron", "Neutron", "Positron"], correct: 2 },
+        { q: "Planet manakah yang dikenal memiliki sistem cincin paling megah?", a: ["Yupiter", "Neptunus", "Saturnus", "Uranus"], correct: 2 },
+        { q: "Zat paling keras yang ditemukan secara alami di Bumi adalah...", a: ["Baja", "Titanium", "Berlian", "Kuarsa"], correct: 2 },
+        { q: "Berapa kecepatan cahaya dalam ruang hampa?", a: ["150.000 km/s", "299.792 km/s", "500.000 km/s", "1.000.000 km/s"], correct: 1 },
+        { q: "Unsur kimia dengan lambang 'Au' adalah...", a: ["Perak", "Tembaga", "Aluminium", "Emas"], correct: 3 },
+        { q: "Apa nama galaksi tempat Bumi berada?", a: ["Andromeda", "Bima Sakti", "Sombrero", "Magellan"], correct: 1 },
+        { q: "Gas apa yang paling banyak terdapat di atmosfer Bumi?", a: ["Oksigen", "Karbon Dioksida", "Nitrogen", "Hidrogen"], correct: 2 },
+        { q: "Apa organ tubuh manusia yang paling berat?", a: ["Paru-paru", "Hati", "Kulit", "Otak"], correct: 2 },
+        { q: "Logam mana yang berwujud cair pada suhu ruangan?", a: ["Timah", "Tembaga", "Raksa", "Seng"], correct: 2 },
+
+        // 11-20: Sejarah & Budaya
+        { q: "Siapa kaisar pertama Perancis?", a: ["Louis XIV", "Charles de Gaulle", "Napoleon Bonaparte", "Charlemagne"], correct: 2 },
+        { q: "Negara mana yang memiliki wilayah terluas di dunia?", a: ["Kanada", "Amerika Serikat", "Cina", "Rusia"], correct: 3 },
+        { q: "Gunung tertinggi di dunia adalah...", a: ["Kilimanjaro", "K2", "Everest", "Fuji"], correct: 2 },
+        { q: "Siapa pelukis mahakarya 'Mona Lisa'?", a: ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Claude Monet"], correct: 2 },
+        { q: "Perang Dunia II berakhir pada tahun berapa?", a: ["1918", "1942", "1945", "1950"], correct: 2 },
+        { q: "Siapa penulis naskah drama 'Romeo and Juliet'?", a: ["Charles Dickens", "Mark Twain", "William Shakespeare", "Oscar Wilde"], correct: 2 },
+        { q: "Negara manakah yang dijuluki 'Negeri Kincir Angin'?", a: ["Jerman", "Belanda", "Belgia", "Denmark"], correct: 1 },
+        { q: "Kapal Titanic tenggelam di Samudra mana?", a: ["Pasifik", "Hindia", "Atlantik", "Arktik"], correct: 2 },
+        { q: "Siapa presiden pertama Amerika Serikat?", a: ["Abraham Lincoln", "George Washington", "Thomas Jefferson", "J.F. Kennedy"], correct: 1 },
+        { q: "Tembok Besar Cina dibangun untuk menghalau serangan bangsa...", a: ["Jepang", "Mongol", "Persia", "Romawi"], correct: 1 },
+
+        // 21-30: Geografi & Negara
+        { q: "Ibu kota negara Jepang adalah...", a: ["Kyoto", "Osaka", "Tokyo", "Hiroshima"], correct: 2 },
+        { q: "Apa nama gurun pasir terluas di dunia?", a: ["Gurun Gobi", "Gurun Sahara", "Gurun Atacama", "Gurun Kalahari"], correct: 1 },
+        { q: "Benua terkecil di dunia adalah...", a: ["Eropa", "Antartika", "Australia", "Amerika Selatan"], correct: 2 },
+        { q: "Selat yang memisahkan pulau Jawa dan Sumatra adalah...", a: ["Selat Malaka", "Selat Sunda", "Selat Bali", "Selat Karimata"], correct: 1 },
+        { q: "Ibu kota negara Australia adalah...", a: ["Sydney", "Melbourne", "Canberra", "Perth"], correct: 2 },
+        { q: "Sungai terpanjang di dunia adalah...", a: ["Amazon", "Nil", "Yangtze", "Mississippi"], correct: 1 },
+        { q: "Negara mana yang memiliki jumlah penduduk terbanyak di dunia?", a: ["Cina", "India", "Amerika Serikat", "Indonesia"], correct: 1 },
+        { q: "Danau terdalam di dunia adalah danau...", a: ["Toba", "Superior", "Baikal", "Victoria"], correct: 2 },
+        { q: "Mata uang negara Inggris adalah...", a: ["Euro", "Dollar", "Poundsterling", "Yen"], correct: 2 },
+        { q: "Kanal yang menghubungkan Samudra Atlantik dan Pasifik adalah...", a: ["Kanal Suez", "Kanal Panama", "Kanal Korintus", "Kanal Kiel"], correct: 1 },
+
+        // 31-40: Pengetahuan Umum & Teknologi
+        { q: "Siapa penemu lampu pijar?", a: ["Graham Bell", "Edison", "Tesla", "Faraday"], correct: 1 },
+        { q: "Apa singkatan dari RAM?", a: ["Read Access Memory", "Random Access Memory", "Ready Auto Memory", "Random Anti Memory"], correct: 1 },
+        { q: "Bahasa pemrograman yang digunakan untuk Android secara asli adalah...", a: ["Swift", "Kotlin", "PHP", "C#"], correct: 1 },
+        { q: "Siapa pendiri Microsoft?", a: ["Steve Jobs", "Mark Zuckerberg", "Bill Gates", "Elon Musk"], correct: 2 },
+        { q: "Apa nama samudra terkecil di dunia?", a: ["Hindia", "Arktik", "Pasifik", "Atlantik"], correct: 1 },
+        { q: "Tahun berapa manusia pertama kali mendarat di bulan?", a: ["1965", "1969", "1972", "1975"], correct: 1 },
+        { q: "Apa organ tubuh yang berfungsi memompa darah?", a: ["Paru-paru", "Ginjal", "Hati", "Jantung"], correct: 3 },
+        { q: "Berapa jumlah warna pada pelangi?", a: ["5", "6", "7", "8"], correct: 2 },
+        { q: "Siapa penemu telepon?", a: ["Alexander Graham Bell", "Albert Einstein", "Guglielmo Marconi", "Nikola Tesla"], correct: 0 },
+        { q: "Apa singkatan dari WWW?", a: ["World Wide Web", "World Wild West", "Web Wide World", "World Web Wide"], correct: 0 },
+
+        // 41-50: Logika & Matematika
+        { q: "Jika 1=5, 2=25, 3=125, maka 5 = ?", a: ["625", "3125", "1", "25"], correct: 2 },
+        { q: "Berapa hasil dari 2 + 2 * 2?", a: ["8", "6", "4", "10"], correct: 1 },
+        { q: "Bulan apa yang memiliki 28 hari?", a: ["Februari", "Januari", "Semua Bulan", "Mei"], correct: 2 },
+        { q: "Apa yang bisa kamu tangkap tapi tidak bisa kamu lempar?", a: ["Bola", "Angin", "Flu", "Matahari"], correct: 2 },
+        { q: "Mana yang lebih berat: 1kg kapas atau 1kg besi?", a: ["Besi", "Kapas", "Sama Berat", "Besi Sedikit"], correct: 2 },
+        { q: "Ayah Mary memiliki 5 anak: Nana, Nene, Nini, Nono. Siapa anak ke-5?", a: ["Nunu", "Nyny", "Mary", "Nana"], correct: 2 },
+        { q: "Sebuah kereta listrik bergerak ke utara, ke mana arah asapnya?", a: ["Selatan", "Utara", "Tidak ada asap", "Barat"], correct: 2 },
+        { q: "Jika ada 3 apel dan kamu mengambil 2, berapa apel yang kamu miliki?", a: ["1", "2", "3", "0"], correct: 1 },
+        { q: "Berapa jumlah pemain dalam satu tim sepak bola?", a: ["10", "11", "12", "9"], correct: 1 },
+        { q: "Angka romawi dari 50 adalah...", a: ["X", "V", "L", "C"], correct: 2 },
+
+        // 51-60: Campuran Akhir
+        { q: "Siapa penulis novel 'Harry Potter'?", a: ["Tolkien", "C.S. Lewis", "J.K. Rowling", "Roald Dahl"], correct: 2 },
+        { q: "Negara mana yang memenangkan Piala Dunia 2022?", a: ["Prancis", "Brasil", "Argentina", "Kroasia"], correct: 2 },
+        { q: "Apa simbol kimia untuk Perak?", a: ["Ag", "Au", "Fe", "Pb"], correct: 0 },
+        { q: "Mamalia terbesar di dunia adalah...", a: ["Gajah", "Jerapah", "Paus Biru", "Hiu Megalodon"], correct: 2 },
+        { q: "Patung Liberty adalah hadiah dari negara... untuk AS.", a: ["Inggris", "Jerman", "Prancis", "Italia"], correct: 2 },
+        { q: "Apa planet terdekat dari Matahari?", a: ["Venus", "Mars", "Merkurius", "Bumi"], correct: 2 },
+        { q: "Berapa jumlah provinsi di Indonesia saat ini (2024)?", a: ["34", "36", "38", "40"], correct: 2 },
+        { q: "Alat musik piano dimainkan dengan cara...", a: ["Dipetik", "Ditiup", "Ditekan", "Digesek"], correct: 2 },
+        { q: "Apa nama mata uang negara Korea Selatan?", a: ["Yen", "Won", "Yuan", "Ringgit"], correct: 1 },
+        { q: "Siapa penemu gaya gravitasi?", a: ["Albert Einstein", "Isaac Newton", "Galileo Galilei", "Stephen Hawking"], correct: 1 }
+    ];
+
+    let current = 0, score = 0, timer, timeLeft = 10, user = {};
+
+    function start() {
+        user.nama = document.getElementById('nama').value;
+        user.telp = document.getElementById('telp').value;
+        user.alamat = document.getElementById('alamat').value;
+        if(!user.nama || !user.telp) return alert("Isi Nama & WA!");
+        document.getElementById('form-area').style.display = 'none';
+        document.getElementById('quiz-area').style.display = 'block';
+        showQ();
+    }
+
+    function showQ() {
+        if(current >= bankSoal.length) return finish();
+        timeLeft = 15;
+        const s = bankSoal[current];
+        document.getElementById('q-count').innerText = `Soal ${current + 1} / ${bankSoal.length}`;
+        document.getElementById('question').innerText = s.q;
+        const optDiv = document.getElementById('options');
+        optDiv.innerHTML = '';
+        s.a.forEach((txt, i) => {
+            optDiv.innerHTML += `<button class="opt" onclick="hit(${i})">${txt}</button>`;
+        });
+        clearInterval(timer);
+        timer = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer-bar').style.width = (timeLeft/15)*100 + "%";
+            if(timeLeft <= 0) hit(-1);
+        }, 1000);
+    }
+
+    function hit(idx) {
+        clearInterval(timer);
+        if(idx === bankSoal[current].c) score++;
+        current++;
+        showQ();
+    }
+
+    async function finish() {
+        document.getElementById('quiz-area').innerHTML = "<h3>Menyimpan Skor...</h3>";
+        await fetch('/simpan-skor', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({...user, skor: score})
+        });
+        location.href = "/"; // Kembali ke depan untuk lihat leaderboard
+    }
+</script>
+</body>
+</html>
